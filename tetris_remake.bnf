@@ -1,0 +1,33 @@
+<programa> ::= <tipo_juego> <grid> <definiciones> <eventos>
+
+<tipo_juego> ::= "GAME_TYPE" "TETRIS" [cite: 36]
+<grid>       ::= "GAME_GRID" "(" <numero> "," <numero> ")" [cite: 36]
+<definiciones> ::= <definicion_entidad> | <definicion_entidad> <definiciones> [cite: 36, 37]
+
+<definicion_entidad> ::= <definicion_shape> | <definicion_powerup> [cite: 19]
+
+<definicion_shape> ::= "DEFINE" "SHAPE" <identificador> ":" <atributos_opcionales> <estados> "END" [cite: 37]
+<definicion_powerup> ::= "DEFINE" "POWERUP" <identificador> ":" <atributos_opcionales> <estados> "END" [cite: 19]
+
+<atributos_opcionales> ::= <atributo> <atributos_opcionales> | <vacio> [cite: 10, 25]
+<atributo> ::= "COLOR" ":" <color_hex> | "CHANCE" ":" <numero> [cite: 14, 15]
+<color_hex> ::= "#" <identificador> [cite: 14]
+<vacio> ::= ""
+
+<estados> ::= <estado> | <estado> <estados> [cite: 37, 38]
+<estado> ::= "STATE" <numero> ":" <matriz> [cite: 38]
+<matriz> ::= <fila> | <fila> <matriz> [cite: 38, 39]
+<fila> ::= "[" <valores_fila> "]" [cite: 39]
+<valores_fila> ::= <numero> | <numero> "," <valores_fila> [cite: 39, 40]
+
+<evento> ::= "ON" <nombre_evento> ":" <acciones> "END" [cite: 40]
+<nombre_evento> ::= "START" | "TICK" | "LINE_CLEAR" | "KEY_UP" | "KEY_DOWN" | "KEY_LEFT" | "KEY_RIGHT" [cite: 41]
+<acciones> ::= <accion> | <accion> <acciones> [cite: 41, 42]
+<accion> ::= "SPAWN" <objeto_spawn> | "MOVE" "CURRENT_PIECE" <direccion> | "ROTATE" "CURRENT_PIECE" | "INCREASE_SCORE" <numero> [cite: 42]
+<objeto_spawn> ::= "RANDOM_SHAPE" | "POWERUP" [cite: 21]
+
+<direccion> ::= "LEFT" | "RIGHT" | "DOWN" [cite: 42, 43]
+<identificador> ::= <letra> | <letra> <identificador> [cite: 43]
+<numero> ::= <digito> | <digito> <numero> [cite: 43, 44]
+<letra> ::= "A"..."Z" | "0"..."9" | "_" [cite: 44, 45]
+<digito> ::= "0"..."9" [cite: 45]
