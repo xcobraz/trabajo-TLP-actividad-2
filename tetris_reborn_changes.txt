@@ -1,0 +1,129 @@
+================================================================================
+  REGISTRO DE CAMBIOS — TETRIS REBORN
+  BrickScript · compiler.py · runtime.py · tetris_remake.brick · archivo.bnf
+================================================================================
+ 
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ARCHIVO: archivo.bnf
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Cambio #1 — COLOR y CHANCE como atributos opcionales
+  ┌─ Línea(s): 9–13 (<atributos_opcionales> y <atributo>)
+  └─ Se añadieron COLOR y CHANCE como atributos opcionales en la gramática
+     de shapes y powerups. Aplica tanto a <definicion_shape> como a
+     <definicion_powerup>.
+ 
+  Cambio #2 — Nuevo tipo DEFINE POWERUP
+  ┌─ Línea(s): 10 (<definicion_powerup>)
+  └─ Se agregó la regla gramatical completa para definir powerups con su
+     propia sintaxis: "DEFINE POWERUP <id> : <atributos_opcionales> <estados> END"
+ 
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ARCHIVO: tetris_remake.brick
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Cambio #3 — States 5 y 6 en L_PIECE
+  ┌─ Línea(s): 41–48 (STATE 5 y STATE 6 dentro de DEFINE SHAPE L_PIECE)
+  └─ Se añadieron dos nuevos estados de rotación a la L_PIECE, ampliando
+     su ciclo de 4 a 6 posiciones posibles.
+ 
+  Cambio #4 — Atributos COLOR y CHANCE en cada pieza existente
+  ┌─ Línea(s): 8–9  (I_PIECE)
+  │            23–24 (L_PIECE)
+  │            52–53 (T_PIECE)
+  │            73–74 (O_PIECE)
+  │            82–83 (S_PIECE)
+  └─ Todas las piezas existentes recibieron los atributos COLOR (valor hex)
+     y CHANCE (peso de aparición ponderada).
+ 
+  Cambio #5 — Nuevas piezas O_PIECE, S_PIECE y powerup MINI_BLOCK
+  ┌─ Línea(s): 72–79  (DEFINE SHAPE O_PIECE)
+  │            81–94  (DEFINE SHAPE S_PIECE)
+  │            96–101 (DEFINE POWERUP MINI_BLOCK)
+  └─ Se definieron dos piezas nuevas y el primer powerup del juego.
+     MINI_BLOCK tiene color #FF0000 y CHANCE 5.
+ 
+  Cambio #6 — Eventos ON TRIPLE_CLEAR y ON L_ROTATE_MAX
+  ┌─ Línea(s): 118–120 (ON TRIPLE_CLEAR)
+  │            123–125 (ON L_ROTATE_MAX)
+  └─ Se agregaron dos nuevos eventos que disparan SPAWN POWERUP al cumplir
+     sus condiciones (3+ líneas simultáneas o 10 rotaciones de L_PIECE).
+ 
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ARCHIVO: compiler.py
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Cambio #7 — Regex de comentarios en el Lexer
+  ┌─ Línea(s): 10–12 (función lexer(), re.sub())
+  └─ Se cambió el regex para que no eliminara colores hex (#RRGGBB) al
+     limpiar comentarios. El nuevo patrón usa lookbehind para distinguir
+     un '#' de comentario de uno de color.
+ 
+  Cambio #8 — consumir() sin argumento fijo en parsear_shape
+  ┌─ Línea(s): 65 (tipo_entidad = self.consumir())
+  └─ Se reemplazó self.consumir('SHAPE') por self.consumir() sin argumento,
+     permitiendo que el parser acepte tanto SHAPE como POWERUP.
+ 
+  Cambio #9 — Parseo de atributos COLOR y CHANCE opcionales
+  ┌─ Línea(s): 69–80 (bucle while dentro de parsear_shape())
+  └─ Se agregó el bucle que lee COLOR y CHANCE con valores por defecto
+     (#00FFFF y 10) para mantener retrocompatibilidad con archivos .brick
+     que no los definan.
+ 
+  Cambio #10 — Guardado en AST con color, chance y tipo de entidad
+  ┌─ Línea(s): 99–106 (diccionario_destino + ast[...][nombre_entidad])
+  └─ El AST ahora distingue entre 'shapes' y 'powerups' como diccionarios
+     separados, e incluye los campos "color" y "chance" en cada entidad.
+ 
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ARCHIVO: runtime.py
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Cambio #11 — Color dinámico en dibujar()
+  ┌─ Línea(s): 125 (dibujar_celda(..., self.pieza_color))
+  └─ Se eliminó el color fijo de pieza y se reemplazó por self.pieza_color,
+     permitiendo que cada pieza se dibuje con su propio color definido en .brick.
+ 
+  Cambio #12 — Selección ponderada y asignación de color en spawn
+  ┌─ Línea(s): 169–187 (tetris_spawn_pieza())
+  └─ Se agregó selección ponderada por CHANCE construyendo un pool con
+     repeticiones según el peso. Al spawnear se asignan self.pieza_color
+     e self.info_pieza_actual, y se reinicia el contador de rotaciones L.
+ 
+  Cambio #13 — Inicialización de nuevas variables en _init_
+  ┌─ Línea(s): 48–53 (bloque if self.tipo_juego == 'TETRIS')
+  └─ Se inicializaron info_pieza_actual = None, pieza_color = '#00FFFF'
+     y contador_rotaciones_l = 0 en el constructor de la clase.
+ 
+  Cambio #14 — SPAWN distingue RANDOM_SHAPE vs POWERUP en ejecutar_evento
+  ┌─ Línea(s): 153–157 (ejecutar_evento(), caso verbo == 'SPAWN')
+  └─ El handler de SPAWN ahora bifurca: si el objeto es RANDOM_SHAPE llama
+     tetris_spawn_pieza('SHAPE'), si es POWERUP llama tetris_spawn_pieza('POWERUP').
+ 
+  Cambio #15 — Contador de rotaciones de L_PIECE
+  ┌─ Línea(s): 205–215 (tetris_rotar_pieza())
+  └─ Se agregó un contador que incrementa cada vez que se rota una pieza con
+     color #FFA500 (L_PIECE). Al llegar a 10, se reinicia y dispara ON_L_ROTATE_MAX.
+ 
+  Cambio #16 — Detección de triple clear
+  ┌─ Línea(s): 239–248 (tetris_limpiar_lineas())
+  └─ Se agregó la condición lineas_limpias >= 3 para disparar automáticamente
+     ON_TRIPLE_CLEAR cuando se eliminan 3 o más líneas en un mismo turno.
+ 
+ 
+================================================================================
+  RESUMEN
+  ──────────────────────────────────────────────────────────────────────────────
+  archivo.bnf           2 cambios   Líneas: 9–13
+  tetris_remake.brick   4 cambios   Líneas: 8–9, 23–24, 41–48, 52–53,
+                                            72–94, 96–101, 118–125
+  compiler.py           4 cambios   Líneas: 10–12, 65, 69–80, 99–106
+  runtime.py            6 cambios   Líneas: 48–53, 125, 153–157,
+                                            169–187, 205–215, 239–248
+  ──────────────────────────────────────────────────────────────────────────────
+  Total: 16 cambios en 4 archivos
+================================================================================
